@@ -3,6 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+ActorsDirectorsCodes_IMDB.tsv
+ActorsDirectorsNames_IMDB.txt
+links_IMDB_MovieLens.csv
+MovieCodes_IMDB.tsv
+Ratings_IMDB.tsv
+TagCodes_MovieLens.csv
+TagScores_MovieLens.csv
 # User-specific files
 *.rsuser
 *.suo
