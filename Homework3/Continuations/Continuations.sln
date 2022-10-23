@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Continuations", "Continuations\Continuations.csproj", "{301217FF-2E9A-4094-B03A-CCBB9AC88ADB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{301217FF-2E9A-4094-B03A-CCBB9AC88ADB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{301217FF-2E9A-4094-B03A-CCBB9AC88ADB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{301217FF-2E9A-4094-B03A-CCBB9AC88ADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{301217FF-2E9A-4094-B03A-CCBB9AC88ADB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
