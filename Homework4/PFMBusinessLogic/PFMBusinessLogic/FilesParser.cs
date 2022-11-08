@@ -6,36 +6,9 @@ public class FilesParser
 {
     public static Dictionary<string, string> GetTitleByMovieCode()
     {
-        var processedCodes = new HashSet<string>();
         var lines = File.ReadAllLines("MovieCodes_IMDB.tsv");
-        return lines.Skip(1).AsParallel()
-            .Where(line =>
-            {
-                if (line.Contains("US") || line.Contains("RU"))
-                {
-                    var code = line[..line.IndexOf('\t')];
-                    lock (processedCodes)
-                    {
-                        if (processedCodes.Contains(code)) return false;
-                        processedCodes.Add(code);
-                        return true;
-                    }
-                }
-
-                return false;
-            })
-            .ToDictionary(keySelector: line => line[..line.IndexOf('\t')], elementSelector: line =>
-            {
-                var span = line.AsSpan();
-                var i = span.IndexOf('\t');
-                span = span[(i + 1)..];
-                i = span.IndexOf('\t');
-                span = span[(i + 1)..];
-                i = span.IndexOf('\t');
-                var title = span[..i].ToString();
-                //var title = span.Slice(i + 1).Slice(i + 1).Slice(0,i).ToString();
-                return title;
-            });
+        var result = new Dictionary<string, string>();
+        throw new NotImplementedException();
     }
 
     // key - movie id, value - list of roles
