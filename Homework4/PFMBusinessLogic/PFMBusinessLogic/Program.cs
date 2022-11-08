@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.Serialization.Json;
 using PFMBusinnecLogic;
 
 class Program
@@ -9,127 +10,82 @@ class Program
     {
         var timer = new Stopwatch();
         timer.Start();
-        var (actors, directors) = FilesParser.GetActorsAndDirectorsByMovieId();
+         var (codesToActorIds, codesToDirectorIds) = FilesParser.GetActorsAndDirectorsByMovieId();
         var codesToTitles = FilesParser.GetTitleByMovieCode();
-        var tagCodesToTitles = FilesParser.GetTagById();
-        var codesToRatings = FilesParser.GetRatingByMovieId();
-        var movieLensCodeToTagIds = FilesParser.GetRelevantTagsByMovieLensId();
-        var imdbToMovieLensIds = FilesParser.GetMovieLensIdByImdbId();
-        var actorIdsToNameAndStarredFilms = FilesParser.GetStarredFilmsAndTitleByActorId();
-
-        var movies = GetMovies(codesToTitles: codesToTitles,
-            codesToActors: actors,
-            codesToDirectors: directors,
-            codesToRatings: codesToRatings,
-            tagCodesToTitles: tagCodesToTitles,
-            imdbToMovieLensIds: imdbToMovieLensIds,
-            movieLensCodesToTagIds: movieLensCodeToTagIds);
-
-        var actorsDct = GetActorsAndDirectors(movies: movies,
-            actorIdsToNameAndStarredFilms: actorIdsToNameAndStarredFilms,
-            codesToTitles: codesToTitles
-        );
-
-        var tags = GetTags(movies);
-        timer.Stop();
-        var el = timer.Elapsed;
-        Console.WriteLine($"{el.Seconds}:{el.Milliseconds}");
+         var tagCodesToTitles = FilesParser.GetTagById();
+         var codesToRatings = FilesParser.GetRatingByMovieId();
+         var movieLensCodeToTagIds = FilesParser.GetRelevantTagsByMovieLensId();
+         var imdbToMovieLensIds = FilesParser.GetMovieLensIdByImdbId();
+         var actorIdsToNameAndStarredFilms = FilesParser.GetStarredFilmsAndTitleByActorId();
+        
+         var movies = DictionariesProvider.GetMovies(codesToTitles: codesToTitles,
+             codesToActorIds: codesToActorIds,
+             codesToDirectorIds: codesToDirectorIds,
+             codesToRatings: codesToRatings,
+             tagCodesToTitles: tagCodesToTitles,
+             imdbToMovieLensIds: imdbToMovieLensIds,
+             movieLensCodesToTagIds: movieLensCodeToTagIds,
+             actorIdsToNameAndStarredFilms: actorIdsToNameAndStarredFilms
+             );
+        
+         var actorsDct = DictionariesProvider.GetActorsAndDirectors(movies: movies,
+             actorIdsToNameAndStarredFilms: actorIdsToNameAndStarredFilms,
+             codesToTitles: codesToTitles
+         );
+        
+         var tags = DictionariesProvider.GetTags(movies);
+         timer.Stop();
+        
+         Console.WriteLine(movies.Count);
+         Console.WriteLine(tags.Count);
+         Console.WriteLine(actorsDct.Count);
+         var el = timer.Elapsed;
+         Console.WriteLine($"{el.Seconds}:{el.Milliseconds}");
+         
+         InputLoop(movies, actorsDct, tags);
     }
 
-    public static Dictionary<string, Movie> GetMovies(Dictionary<string, string> codesToTitles,
-        Dictionary<string, string> codesToRatings,
-        Dictionary<string, List<string>> movieLensCodesToTagIds,
-        Dictionary<string, string> tagCodesToTitles,
-        Dictionary<string, List<string>> codesToActors,
-        Dictionary<string, string> codesToDirectors,
-        Dictionary<string, string> imdbToMovieLensIds)
+    private static void InputLoop(Dictionary<string, Movie> movies, Dictionary<string, HashSet<Movie>> actors,
+        Dictionary<string, HashSet<Movie>> tags)
     {
-        var result = new Dictionary<string, Movie>();
-        foreach (var (key, value) in codesToTitles)
+        Console.WriteLine("-m [title] - print information about movie with the specified title \n"+
+                          "-a [name] - print information about actor or director with the specified name \n" +
+                          "-t [tag title] - print information about movies related to the specified tag \n" +
+                          "exit to kill program");
+        var input = Console.ReadLine();
+        while (input is not "exit")
         {
-            var movie = GetMovieById(key, codesToTitles: codesToTitles,
-                codesToActors: codesToActors,
-                codesToDirectors: codesToDirectors,
-                codesToRatings: codesToRatings,
-                tagCodesToTitles: tagCodesToTitles,
-                imdbToMovieLensIds: imdbToMovieLensIds,
-                movieLensCodesToTagIds: movieLensCodesToTagIds);
-            if (!result.ContainsKey(value))
-                result.Add(value, movie);
-        }
-
-        return result;
-    }
-
-    private static Dictionary<string, HashSet<Movie>> GetActorsAndDirectors(
-        Dictionary<string, Movie> movies,
-        Dictionary<string, (string, List<string>)> actorIdsToNameAndStarredFilms,
-        Dictionary<string, string> codesToTitles)
-    {
-        var result = new Dictionary<string, HashSet<Movie>>();
-        foreach (var (_, (name, starredFilmIds)) in actorIdsToNameAndStarredFilms)
-        {
-            var actorMovies = new HashSet<Movie>();
-            foreach (var movie in starredFilmIds.Select(filmId =>
-                         codesToTitles.ContainsKey(filmId) && movies.ContainsKey(codesToTitles[filmId])
-                             ? movies[codesToTitles[filmId]]
-                             : null))
+            var key = input[..input.IndexOf(' ')];
+            var value = input[(input.IndexOf(' ') + 1)..];
+            switch (key)
             {
-                if (movie != null) actorMovies.Add(movie);
+                case "-m":
+                    Console.WriteLine(movies.ContainsKey(value) ? GetMovieInfo(movies[value]) : "unknown fulm");
+                    break;
+                case "-a":
+                    Console.WriteLine(actors.ContainsKey(value) ? GetMovieTitles(actors[value]) : "unknown actor");
+                    break;
+                case "-t":
+                    Console.WriteLine(tags.ContainsKey(value) ? GetMovieTitles(tags[value]) : "unknown tag");
+                    break;
+                
             }
-
-            if (!result.ContainsKey(name))
-                result.Add(name, actorMovies);
+            input = Console.ReadLine();
         }
-
-        return result;
     }
 
-    public static Dictionary<string, HashSet<Movie>> GetTags(Dictionary<string, Movie> movies)
+    private static string GetMovieInfo(Movie movie)
     {
-        var result = new Dictionary<string, HashSet<Movie>>();
-        foreach (var (title, movie) in movies)
-        {
-            foreach (var tag in movie.Tags)
-            {
-                if (result.ContainsKey(tag))
-                {
-                    result[tag].Add(movies[title]);
-                }
-                else
-                {
-                    result.Add(tag, new HashSet<Movie> { movies[title] });
-                }
-            }
-        }
-
-        return result;
+        return $"Title - {movie.Title} \n" +
+               $"Rate - {movie.Rate}\n" +
+               $"Director - {movie.Director}\n " +
+               $"Actors - {string.Join(',', movie.Actors)}\n" +
+               $"Tags - {string.Join(',', movie.Tags)}";
     }
 
-
-
-
-
-
-private static Movie GetMovieById(string key, Dictionary<string, string> codesToTitles,
-        Dictionary<string, string> codesToRatings,
-        Dictionary<string, List<string>> movieLensCodesToTagIds,
-        Dictionary<string, string> tagCodesToTitles,
-        Dictionary<string, List<string>> codesToActors,
-        Dictionary<string, string> codesToDirectors,
-        Dictionary<string, string> imdbToMovieLensIds)
+    private static string GetMovieTitles(IEnumerable<Movie> movies)
     {
-        if (!codesToTitles.ContainsKey(key)) return new Movie();
-        return new Movie
-        {
-            Title = codesToTitles[key],
-            Rate = codesToRatings.ContainsKey(key) ? codesToRatings[key] : null,
-            Director = codesToDirectors.ContainsKey(key) ? codesToDirectors[key] : null,
-            Actors = codesToActors.ContainsKey(key) ? codesToActors[key].ToHashSet() : new HashSet<string>(),
-            Tags = imdbToMovieLensIds.ContainsKey(key)
-                ? movieLensCodesToTagIds[imdbToMovieLensIds[key]].Select(id => tagCodesToTitles[id]).ToHashSet()
-                : new HashSet<string>()
-        };
+        return string.Join(',', movies.Select(movie => movie.Title));
     }
 }
 

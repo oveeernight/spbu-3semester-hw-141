@@ -8,7 +8,36 @@ public class FilesParser
     {
         var lines = File.ReadAllLines("MovieCodes_IMDB.tsv");
         var result = new Dictionary<string, string>();
-        throw new NotImplementedException();
+        Parallel.ForEach(lines, line =>
+        {
+            var span = line.AsSpan();
+            var i = span.IndexOf('\t');
+
+            var movieId = span[..i].ToString();
+            span = span[(i + 1)..];
+            
+            i = span.IndexOf('\t');
+            span = span[(i + 1)..];
+            
+            i = span.IndexOf('\t');
+            var title = span[..i].ToString();
+            span = span[(i + 1)..];
+            
+            i = span.IndexOf('\t');
+            var region = span[..i].ToString();
+
+            if (region is "RU" or "GB" or "US")
+            {
+                lock (result)
+                {
+                    if (!result.ContainsKey(movieId))
+                    {
+                        result.Add(movieId, title);
+                    }
+                }
+            }
+        });
+        return result;
     }
 
     // key - movie id, value - list of roles
@@ -161,7 +190,7 @@ public class FilesParser
             var i = span.IndexOf(',');
             span = span[(i + 1)..];
             i = span.IndexOf(',');
-            return span[..i].ToString();
+            return $"tt{span[..i]}";
         }, elementSelector: line => line[..line.IndexOf(',')]);
         
         
