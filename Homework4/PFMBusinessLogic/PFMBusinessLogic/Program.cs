@@ -8,15 +8,17 @@ class Program
 {
     public static void Main(string[] args)
     {
+        var pathTemplate = "../../../Files";
         var timer = new Stopwatch();
         timer.Start();
-         var (codesToActorIds, codesToDirectorIds) = FilesParser.GetActorsAndDirectorsByMovieId();
-        var codesToTitles = FilesParser.GetTitleByMovieCode();
-         var tagCodesToTitles = FilesParser.GetTagById();
-         var codesToRatings = FilesParser.GetRatingByMovieId();
-         var movieLensCodeToTagIds = FilesParser.GetRelevantTagsByMovieLensId();
-         var imdbToMovieLensIds = FilesParser.GetMovieLensIdByImdbId();
-         var actorIdsToNameAndStarredFilms = FilesParser.GetStarredFilmsAndTitleByActorId();
+         var (codesToActorIds, codesToDirectorIds) = 
+             FilesParser.GetActorsAndDirectorsByMovieId($"{pathTemplate}/ActorsDirectorsCodes_IMDB.tsv");
+        var codesToTitles = FilesParser.GetTitleByMovieCode($"{pathTemplate}/MovieCodes_IMDB.tsv");
+         var tagCodesToTitles = FilesParser.GetTagById($"{pathTemplate}/TagCodes_MovieLens.csv");
+         var codesToRatings = FilesParser.GetRatingByMovieId($"{pathTemplate}/Ratings_IMDB.tsv");
+         var movieLensCodeToTagIds = FilesParser.GetRelevantTagsByMovieLensId($"{pathTemplate}/TagScores_MovieLens.csv");
+         var imdbToMovieLensIds = FilesParser.GetMovieLensIdByImdbId($"{pathTemplate}/links_IMDB_MovieLens.csv");
+         var actorIdsToNameAndStarredFilms = FilesParser.GetStarredFilmsAndTitleByActorId($"{pathTemplate}/ActorsDirectorsNames_IMDB.txt");
         
          var movies = DictionariesProvider.GetMovies(codesToTitles: codesToTitles,
              codesToActorIds: codesToActorIds,
@@ -35,12 +37,9 @@ class Program
         
          var tags = DictionariesProvider.GetTags(movies);
          timer.Stop();
-        
-         Console.WriteLine(movies.Count);
-         Console.WriteLine(tags.Count);
-         Console.WriteLine(actorsDct.Count);
+         
          var el = timer.Elapsed;
-         Console.WriteLine($"{el.Seconds}:{el.Milliseconds}");
+         Console.WriteLine($"{el.Minutes}:{el.Seconds}:{el.Milliseconds}");
          
          InputLoop(movies, actorsDct, tags);
     }

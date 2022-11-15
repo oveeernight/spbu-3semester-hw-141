@@ -4,9 +4,9 @@ namespace PFMBusinnecLogic;
 
 public class FilesParser
 {
-    public static Dictionary<string, string> GetTitleByMovieCode()
+    public static Dictionary<string, string> GetTitleByMovieCode(string path)
     {
-        var lines = File.ReadAllLines("MovieCodes_IMDB.tsv");
+        var lines = File.ReadAllLines(path);
         var result = new Dictionary<string, string>();
         Parallel.ForEach(lines, line =>
         {
@@ -41,9 +41,9 @@ public class FilesParser
     }
 
     // key - movie id, value - list of roles
-    public static (Dictionary<string, List<string>>, Dictionary<string, string>) GetActorsAndDirectorsByMovieId()
+    public static (Dictionary<string, List<string>>, Dictionary<string, string>) GetActorsAndDirectorsByMovieId(string path)
     {
-        var lines = File.ReadAllLines("ActorsDirectorsCodes_IMDB.tsv");
+        var lines = File.ReadAllLines(path);
         var actors = new Dictionary<string, List<string>>();
         var directors = new Dictionary<string, string>();
         Parallel.ForEach(lines, line =>
@@ -95,9 +95,9 @@ public class FilesParser
     }
 
     // key - actorId, value - list of filmIds, name
-    public static Dictionary<string, (string, List<string>)> GetStarredFilmsAndTitleByActorId()
+    public static Dictionary<string, (string, List<string>)> GetStarredFilmsAndTitleByActorId(string path)
     {
-        var lines = File.ReadAllLines("ActorsDirectorsNames_IMDB.txt");
+        var lines = File.ReadAllLines(path);
         var result = new Dictionary<string, (string, List<string>)>();
         Parallel.ForEach(lines, line =>
         {
@@ -135,9 +135,9 @@ public class FilesParser
         return result;
     }
 
-    public static Dictionary<string, string> GetRatingByMovieId()
+    public static Dictionary<string, string> GetRatingByMovieId(string path)
     {
-        var lines = File.ReadAllLines("Ratings_IMDB.tsv");
+        var lines = File.ReadAllLines(path);
         return lines.Skip(1).AsParallel().ToDictionary(keySelector: line => line[..line.IndexOf('\t')], elementSelector:
             line =>
             {
@@ -147,10 +147,10 @@ public class FilesParser
     }
 
     // key - movieId, value - list of relevant tags
-    public static Dictionary<string, List<string>> GetRelevantTagsByMovieLensId()
+    public static Dictionary<string, List<string>> GetRelevantTagsByMovieLensId(string path)
     {
         var result = new Dictionary<string, List<string>>();
-        var lines = File.ReadAllLines("TagScores_MovieLens.csv").Skip(1);
+        var lines = File.ReadAllLines(path).Skip(1);
         Parallel.ForEach(lines, line =>
         {
             var span = line.AsSpan();
@@ -181,9 +181,9 @@ public class FilesParser
         return result;
     }
 
-    public static Dictionary<string, string> GetMovieLensIdByImdbId()
+    public static Dictionary<string, string> GetMovieLensIdByImdbId(string path)
     {
-        var lines = File.ReadAllLines("links_IMDB_MovieLens.csv");
+        var lines = File.ReadAllLines(path);
         return lines.Skip(1).AsParallel().ToDictionary(keySelector: line =>
         {
             var span = line.AsSpan();
@@ -204,9 +204,9 @@ public class FilesParser
         // });
     }
 
-    public static Dictionary<string, string> GetTagById()
+    public static Dictionary<string, string> GetTagById(string path)
     {
-        var lines = File.ReadAllLines("TagCodes_MovieLens.csv");
+        var lines = File.ReadAllLines(path);
         return lines.Skip(1).AsParallel().ToDictionary(keySelector: line => line[..line.IndexOf(',')],
             elementSelector: line => line[(line.IndexOf(',') + 1)..]);
     }
