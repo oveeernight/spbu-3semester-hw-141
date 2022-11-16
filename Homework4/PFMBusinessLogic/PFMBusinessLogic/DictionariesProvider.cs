@@ -106,8 +106,8 @@ public static class DictionariesProvider
             Title = codesToTitles[code],
             Rate = codesToRatings.ContainsKey(code) ? codesToRatings[code] : null,
             Director = codesToDirectorIds.ContainsKey(code) ?  actorIdsToNameAndStarredFilms[codesToDirectorIds[code]].Item1 : null,
-            Actors = actors,
-            Tags = tags
+            Actors = actors.ToList(),
+            Tags = tags.ToList()
         };
     }
 }
