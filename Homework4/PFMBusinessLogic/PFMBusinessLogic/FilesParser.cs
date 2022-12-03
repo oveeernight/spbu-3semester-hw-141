@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace PFMBusinnecLogic;
+namespace PFMBusinessLogic;
 
 public class FilesParser
 {

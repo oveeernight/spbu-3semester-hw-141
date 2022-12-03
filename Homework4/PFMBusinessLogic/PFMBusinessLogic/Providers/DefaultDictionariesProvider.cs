@@ -1,8 +1,13 @@
-﻿namespace PFMBusinnecLogic;
+﻿using PFMBusinessLogic.DefaultModels;
 
-public static class DictionariesProvider
+namespace PFMBusinessLogic.Providers;
+
+/// <summary>
+/// Provides required dictionaries with strings instead of models
+/// </summary>
+public static class DefaultDictionariesProvider
 {
-    public static Dictionary<string, Movie> GetMovies(Dictionary<string, string> codesToTitles,
+    public static Dictionary<string, DefaultMovie> GetMovies(Dictionary<string, string> codesToTitles,
         Dictionary<string, string> codesToRatings,
         Dictionary<string, List<string>> movieLensCodesToTagIds,
         Dictionary<string, string> tagCodesToTitles,
@@ -11,10 +16,10 @@ public static class DictionariesProvider
         Dictionary<string, string> imdbToMovieLensIds,
         Dictionary<string,(string, List<string>)> actorIdsToNameAndStarredFilms)
     {
-        var result = new Dictionary<string, Movie>();
+        var result = new Dictionary<string, DefaultMovie>();
         foreach (var (code, value) in codesToTitles)
         {
-            var movie = GetMovieById(code, codesToTitles: codesToTitles,
+            var DefaultMovie = GetMovieById(code, codesToTitles: codesToTitles,
                 codesToActorIds: codesToActorIds,
                 codesToDirectorIds: codesToDirectorIds,
                 codesToRatings: codesToRatings,
@@ -24,27 +29,27 @@ public static class DictionariesProvider
                 actorIdsToNameAndStarredFilms: actorIdsToNameAndStarredFilms
                 );
             if (!result.ContainsKey(value))
-                 result.Add(value, movie);
+                 result.Add(value, DefaultMovie);
         }
 
         return result;
     }
     
-    public static Dictionary<string, HashSet<Movie>> GetActorsAndDirectors(
-        Dictionary<string, Movie> movies,
+    public static Dictionary<string, HashSet<string>> GetActorsAndDirectors(
+        Dictionary<string, DefaultMovie> movies,
         Dictionary<string, (string, List<string>)> actorIdsToNameAndStarredFilms,
         Dictionary<string, string> codesToTitles)
     {
-        var result = new Dictionary<string, HashSet<Movie>>();
+        var result = new Dictionary<string, HashSet<string>>();
         foreach (var (_, (name, starredFilmIds)) in actorIdsToNameAndStarredFilms)
         {
-            var actorMovies = new HashSet<Movie>();
-            foreach (var movie in starredFilmIds.Select(filmId =>
+            var actorMovies = new HashSet<string>();
+            foreach (var defaultMovie in starredFilmIds.Select(filmId =>
                          codesToTitles.ContainsKey(filmId) && movies.ContainsKey(codesToTitles[filmId])
                              ? movies[codesToTitles[filmId]]
-                             : null))
+                             : new DefaultMovie()))
             {
-                if (movie != null) actorMovies.Add(movie);
+                actorMovies.Add(defaultMovie.Title);
             }
 
             if (!result.ContainsKey(name))
@@ -54,20 +59,20 @@ public static class DictionariesProvider
         return result;
     }
     
-    public static Dictionary<string, HashSet<Movie>> GetTags(Dictionary<string, Movie> movies)
+    public static Dictionary<string, HashSet<string>> GetTags(Dictionary<string, DefaultMovie> movies)
     {
-        var result = new Dictionary<string, HashSet<Movie>>();
+        var result = new Dictionary<string, HashSet<string>>();
         foreach (var (title, movie) in movies)
         {
             foreach (var tag in movie.Tags)
             {
                 if (result.ContainsKey(tag))
                 {
-                    result[tag].Add(movies[title]);
+                    result[tag].Add(title);
                 }
                 else
                 {
-                    result.Add(tag, new HashSet<Movie> { movies[title] });
+                    result.Add(tag, new HashSet<string> { title });
                 }
             }
         }
@@ -75,7 +80,7 @@ public static class DictionariesProvider
         return result;
     }
     
-    private static Movie GetMovieById(string code,
+    private static DefaultMovie GetMovieById(string code,
         IReadOnlyDictionary<string, string> codesToTitles,
         IReadOnlyDictionary<string, string> codesToRatings,
         IReadOnlyDictionary<string, List<string>> movieLensCodesToTagIds,
@@ -101,7 +106,7 @@ public static class DictionariesProvider
             tags.Add(tagCodesToTitles[tagCode]);
         }
         
-        return new Movie
+        return new DefaultMovie
         {
             Title = codesToTitles[code],
             Rate = codesToRatings.ContainsKey(code) ? codesToRatings[code] : null,

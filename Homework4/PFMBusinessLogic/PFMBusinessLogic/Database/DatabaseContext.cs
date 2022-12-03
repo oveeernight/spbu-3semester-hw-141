@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using PFMBusinessLogic.Models;
-using PFMBusinnecLogic.Models;
 
-namespace PFMBusinnecLogic.Database;
+namespace PFMBusinessLogic.Database;
 
 public class DatabaseContext : DbContext
 {
@@ -12,6 +10,13 @@ public class DatabaseContext : DbContext
         var connectionString =
             "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=postgres";
         optionsBuilder.UseNpgsql(connectionString);
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasDefaultSchema("movies");
+        modelBuilder.Entity<Movie>().HasMany(movie => movie.Actors).WithMany()
+        
     }
 
     public DbSet<Movie> MoviesStorage { get; set; }

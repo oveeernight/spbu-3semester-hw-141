@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PFMBusinnecLogic.Models;
+namespace PFMBusinessLogic.Models;
 
-public class Actor
+public class Person
 {
     [Key] 
     public string Name { get; set; }
