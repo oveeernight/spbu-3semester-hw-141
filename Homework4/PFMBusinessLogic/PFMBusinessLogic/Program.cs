@@ -51,5 +51,4 @@ public class Program
         var movies = movieModelsWithoutTagsAndPersons.WithPersons(personModels)
             .WithTags(tagModels);
     }
-
 }

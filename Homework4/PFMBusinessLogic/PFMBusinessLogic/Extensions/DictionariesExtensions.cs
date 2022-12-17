@@ -15,8 +15,8 @@ public static class DictionariesExtensions
                 Director = defaultMovie.Director,
                 Rate = defaultMovie.Rate,
                 Title = title,
-                Persons = defaultMovie.Actors.Select(person => new Person{Name = person, Movies = new HashSet<Movie>()}).ToArray(),
-                Tags = defaultMovie.Tags.Select(tag => new Tag{Name = tag, Movies = new HashSet<Movie>()}).ToArray()
+                Persons = defaultMovies.Count == 0 ? new HashSet<Person>() : defaultMovie.Actors.Select(person => new Person{Name = person, Movies = new HashSet<Movie>()}).ToArray(),
+                Tags = defaultMovie.Tags.Count == 0 ? new HashSet<Tag>() : defaultMovie.Tags.Select(tag => new Tag{Name = tag, Movies = new HashSet<Movie>()}).ToArray()
             });
         }
 
@@ -66,7 +66,7 @@ public static class DictionariesExtensions
             persons.Add(name, new Person
             {
                 Name = name,
-                Movies = defaultMovies.Select(movie => movies[movie]).ToHashSet()
+                Movies = defaultMovies.Count == 0 ? new HashSet<Movie>() : defaultMovies.Select(movie => movies[movie]).ToHashSet()
             });
         }
 
@@ -82,7 +82,7 @@ public static class DictionariesExtensions
             tags.Add(name, new Tag
             {
                 Name = name,
-                Movies = defaultMovies.Select(movie => movies[movie]).ToHashSet()
+                Movies = defaultMovies.Count == 0 ? new HashSet<Movie>() : defaultMovies.Select(movie => movies[movie]).ToHashSet()
             }); 
         }
 

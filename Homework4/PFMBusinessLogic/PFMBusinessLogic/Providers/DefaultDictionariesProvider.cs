@@ -112,7 +112,7 @@ public static class DefaultDictionariesProvider
             Rate = codesToRatings.ContainsKey(code) ? codesToRatings[code] : null,
             Director = codesToDirectorIds.ContainsKey(code) ?  actorIdsToNameAndStarredFilms[codesToDirectorIds[code]].Item1 : null,
             Actors = actors.ToList(),
-            Tags = tags.ToList()
+            Tags = tags.ToHashSet()
         };
     }
 }
