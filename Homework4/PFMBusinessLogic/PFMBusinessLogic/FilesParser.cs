@@ -95,7 +95,7 @@ public class FilesParser
     }
 
     // key - actorId, value - list of filmIds, name
-    public static Dictionary<string, (string, List<string>)> GetStarredFilmsAndTitleByActorId(string path)
+    public static Dictionary<string, (string, List<string>)> GetStarredFilmsAndTitleByPersonId(string path)
     {
         var lines = File.ReadAllLines(path);
         var result = new Dictionary<string, (string, List<string>)>();

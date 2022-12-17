@@ -15,7 +15,7 @@ public class DatabaseContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("movies");
-        modelBuilder.Entity<Movie>().HasMany(movie => movie.Persons).WithMany(actor => actor.Movies);
+        modelBuilder.Entity<Movie>().HasMany(movie => movie.Actors).WithMany(actor => actor.Movies);
         modelBuilder.Entity<Movie>().HasMany(movie => movie.Tags).WithMany(tag => tag.Movies);
     }
 
