@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using PFMBusinessLogic.Database;
 using PFMBusinessLogic.Extensions;
 using PFMBusinessLogic.Providers;
 
@@ -37,20 +38,36 @@ public class Program
             codesToTitles: codesToTitles
         );
         
-        var tags = DictionariesProvider.GetTags(movies);
-
-        movies = movies.WithFullTagsAndPersons(persons, tags);
-        timer.Stop();
-
+        var tags = DictionariesProvider.GetTags(movies); 
         var el = timer.Elapsed;
         Console.WriteLine($"{el.Minutes}:{el.Seconds}:{el.Milliseconds}");
-        //
-        // Console.WriteLine("Starting to write models in db");
-        //
-        // var movieModelsWithoutTagsAndPersons = defaultMovies.ToMovieModels();
-        // var personModels = persons.ToPersonModels(movieModelsWithoutTagsAndPersons);
-        // var tagModels = tags.ToTagModels(movieModelsWithoutTagsAndPersons);
-        // var movies = movieModelsWithoutTagsAndPersons.WithPersons(personModels)
-        //     .WithTags(tagModels);
+        
+        Console.WriteLine("Filling tags, persons and related movies");
+        movies = movies.WithFullTagsAndPersons(persons, tags)
+            .WithRelatedMovies();
+         el = timer.Elapsed;
+        Console.WriteLine($"{el.Minutes}:{el.Seconds}:{el.Milliseconds}");
+
+        Console.WriteLine("Writing models to database");
+        Console.WriteLine();
+
+        Console.WriteLine("Writing movies");
+        var dbContext = new DatabaseContext();
+        foreach (var (_, movie) in movies)
+        {
+            dbContext.MoviesStorage.Add(movie);
+        }
+        
+        Console.WriteLine("Writing tags");
+        foreach (var (_, tag) in tags)
+        {
+            dbContext.TagsStorage.Add(tag);
+        }
+        
+        Console.WriteLine("Writing persons");
+        foreach (var (_, person ) in persons)
+        {
+            dbContext.PersonsStorage.Add(person);
+        }
     }
 }

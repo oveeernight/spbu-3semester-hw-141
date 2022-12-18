@@ -20,12 +20,19 @@ public static class MoviesDictionaryExtensions
 
     public static Dictionary<string, Movie> WithRelatedMovies(this Dictionary<string, Movie> source)
     {
-        foreach (var (_, movie) in source)
+        Parallel.ForEach(source, pair =>
         {
+            var movie = pair.Value;
             var candidates = movie.Actors.SelectMany(actor => actor.Movies)
                 .Union(movie.Tags.SelectMany(tag => tag.Movies)).ToArray();
-            movie.Top10Related = candidates.OrderBy(m => movie.GetSimilarityRate(m)).Take(10).ToArray();
-        }
+            movie.Top10Related = candidates.OrderBy(m => movie.GetSimilarityRate(m)).Take(10).ToList();
+        });
+        // foreach (var (_, movie) in source)
+        // {
+        //     var candidates = movie.Actors.SelectMany(actor => actor.Movies)
+        //         .Union(movie.Tags.SelectMany(tag => tag.Movies)).ToArray();
+        //     movie.Top10Related = candidates.OrderBy(m => movie.GetSimilarityRate(m)).Take(10).ToArray();
+        // }
 
         return source;
     }

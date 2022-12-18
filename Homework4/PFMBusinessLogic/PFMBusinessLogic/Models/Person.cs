@@ -5,7 +5,7 @@ namespace PFMBusinessLogic.Models;
 public class Person
 {
     [Key] public string Name { get; set; } = string.Empty;
-    public ICollection<Movie> Movies { get; set; } = new HashSet<Movie>();
+    public virtual ICollection<Movie> Movies { get; set; } = new HashSet<Movie>();
 
     public override bool Equals(object? obj)
     {
