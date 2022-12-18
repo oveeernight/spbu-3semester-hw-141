@@ -18,4 +18,16 @@ public static class MoviesDictionaryExtensions
         return source;
     }
 
+    public static Dictionary<string, Movie> WithRelatedMovies(this Dictionary<string, Movie> source)
+    {
+        foreach (var (_, movie) in source)
+        {
+            var candidates = movie.Actors.SelectMany(actor => actor.Movies)
+                .Union(movie.Tags.SelectMany(tag => tag.Movies)).ToArray();
+            movie.Top10Related = candidates.OrderBy(m => movie.GetSimilarityRate(m)).Take(10).ToArray();
+        }
+
+        return source;
+    }
+
 }
