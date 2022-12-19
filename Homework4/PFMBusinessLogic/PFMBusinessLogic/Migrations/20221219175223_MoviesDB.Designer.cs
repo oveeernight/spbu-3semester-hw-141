@@ -11,15 +11,14 @@ using PFMBusinessLogic.Database;
 namespace PFMBusinessLogic.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20221203212342_MoviesApp")]
-    partial class MoviesApp
+    [Migration("20221219175223_MoviesDB")]
+    partial class MoviesDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("movies")
                 .HasAnnotation("ProductVersion", "7.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -27,17 +26,17 @@ namespace PFMBusinessLogic.Migrations
 
             modelBuilder.Entity("MoviePerson", b =>
                 {
+                    b.Property<string>("ActorsName")
+                        .HasColumnType("text");
+
                     b.Property<string>("MoviesTitle")
                         .HasColumnType("text");
 
-                    b.Property<string>("PersonsName")
-                        .HasColumnType("text");
+                    b.HasKey("ActorsName", "MoviesTitle");
 
-                    b.HasKey("MoviesTitle", "PersonsName");
+                    b.HasIndex("MoviesTitle");
 
-                    b.HasIndex("PersonsName");
-
-                    b.ToTable("MoviePerson", "movies");
+                    b.ToTable("MoviePerson");
                 });
 
             modelBuilder.Entity("MovieTag", b =>
@@ -52,7 +51,7 @@ namespace PFMBusinessLogic.Migrations
 
                     b.HasIndex("TagsName");
 
-                    b.ToTable("MovieTag", "movies");
+                    b.ToTable("MovieTag");
                 });
 
             modelBuilder.Entity("PFMBusinessLogic.Models.Movie", b =>
@@ -60,7 +59,11 @@ namespace PFMBusinessLogic.Migrations
                     b.Property<string>("Title")
                         .HasColumnType("text");
 
-                    b.Property<string>("Director")
+                    b.Property<string>("DirectorName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MovieTitle")
                         .HasColumnType("text");
 
                     b.Property<string>("Rate")
@@ -68,7 +71,11 @@ namespace PFMBusinessLogic.Migrations
 
                     b.HasKey("Title");
 
-                    b.ToTable("MoviesStorage", "movies");
+                    b.HasIndex("DirectorName");
+
+                    b.HasIndex("MovieTitle");
+
+                    b.ToTable("MoviesStorage");
                 });
 
             modelBuilder.Entity("PFMBusinessLogic.Models.Person", b =>
@@ -78,7 +85,7 @@ namespace PFMBusinessLogic.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("ActorsStorage", "movies");
+                    b.ToTable("PersonsStorage");
                 });
 
             modelBuilder.Entity("PFMBusinessLogic.Models.Tag", b =>
@@ -88,20 +95,20 @@ namespace PFMBusinessLogic.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("TagsStorage", "movies");
+                    b.ToTable("TagsStorage");
                 });
 
             modelBuilder.Entity("MoviePerson", b =>
                 {
-                    b.HasOne("PFMBusinessLogic.Models.Movie", null)
+                    b.HasOne("PFMBusinessLogic.Models.Person", null)
                         .WithMany()
-                        .HasForeignKey("MoviesTitle")
+                        .HasForeignKey("ActorsName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PFMBusinessLogic.Models.Person", null)
+                    b.HasOne("PFMBusinessLogic.Models.Movie", null)
                         .WithMany()
-                        .HasForeignKey("PersonsName")
+                        .HasForeignKey("MoviesTitle")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -119,6 +126,26 @@ namespace PFMBusinessLogic.Migrations
                         .HasForeignKey("TagsName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PFMBusinessLogic.Models.Movie", b =>
+                {
+                    b.HasOne("PFMBusinessLogic.Models.Person", "Director")
+                        .WithMany()
+                        .HasForeignKey("DirectorName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PFMBusinessLogic.Models.Movie", null)
+                        .WithMany("Top10Related")
+                        .HasForeignKey("MovieTitle");
+
+                    b.Navigation("Director");
+                });
+
+            modelBuilder.Entity("PFMBusinessLogic.Models.Movie", b =>
+                {
+                    b.Navigation("Top10Related");
                 });
 #pragma warning restore 612, 618
         }
