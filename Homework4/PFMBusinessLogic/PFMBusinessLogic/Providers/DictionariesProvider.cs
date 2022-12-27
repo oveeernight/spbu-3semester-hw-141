@@ -1,4 +1,5 @@
-﻿using PFMBusinessLogic.Models;
+﻿using System.Globalization;
+using PFMBusinessLogic.Models;
 
 namespace PFMBusinessLogic.Providers;
 
@@ -7,65 +8,71 @@ namespace PFMBusinessLogic.Providers;
 /// </summary>
 public static class DictionariesProvider
 {
-    public static Dictionary<string, Movie> GetMovies(Dictionary<string, string> codesToTitles,
+    public static List<Movie> GetMovies(Dictionary<string, string> codesToTitles,
         Dictionary<string, string> codesToRatings,
         Dictionary<string, List<string>> movieLensCodesToTagIds,
         Dictionary<string, string> tagCodesToTitles,
         Dictionary<string, List<string>> codesToActorIds,
-        Dictionary<string, string> codesToDirectorIds,
+        Dictionary<string, List<string>> codesToDirectorIds,
         Dictionary<string, string> imdbToMovieLensIds,
         Dictionary<string,(string, List<string>)> personIdsToNameAndStarredFilms)
     {
+        Console.WriteLine("Creating movies storage elements");
         var result = new Dictionary<string, Movie>();
-        foreach (var (code, value) in codesToTitles)
+        Parallel.ForEach(codesToTitles, pair =>
         {
-            var movie = CreateMovie(code, codesToTitles: codesToTitles,
-                codesToActorIds: codesToActorIds,
-                codesToDirectorIds: codesToDirectorIds,
-                codesToRatings: codesToRatings,
-                tagCodesToTitles: tagCodesToTitles,
-                imdbToMovieLensIds: imdbToMovieLensIds,
-                movieLensCodesToTagIds: movieLensCodesToTagIds,
-                personIdsToNameAndStarredFilms: personIdsToNameAndStarredFilms
-                );
-            if (!result.ContainsKey(value))
-                 result.Add(value, movie);
-        }
-
-        return result;
-    }
-    
-    public static Dictionary<string, Person> GetPersons(
-        Dictionary<string, Movie> movies,
-        Dictionary<string, (string, List<string>)> personIdsToNameAndStarredFilms,
-        Dictionary<string, string> codesToTitles)
-    {
-        var result = new Dictionary<string, Person>();
-        foreach (var (_, (name, starredMovieIds)) in personIdsToNameAndStarredFilms)
-        {
-            var actorMovies = new HashSet<Movie>();
-            foreach (var movie in starredMovieIds.Select(id =>
-                         codesToTitles.ContainsKey(id) && movies.ContainsKey(codesToTitles[id])
-                             ? movies[codesToTitles[id]]
-                             : new Movie()))
+            var code = pair.Key;
+            var actorIds = codesToActorIds.ContainsKey(code) ? codesToActorIds[code] : new List<string>();
+            var actors = new HashSet<Person>();
+            foreach (var actorId in actorIds.Where(personIdsToNameAndStarredFilms.ContainsKey))
             {
-                actorMovies.Add(movie);
+                actors.Add(new Person() { Name = personIdsToNameAndStarredFilms[actorId].Item1 });
             }
 
-            if (!result.ContainsKey(name))
-                result.Add(name, new Person
-                {
-                    Movies = actorMovies, Name = name
-                });
-        }
+            var directorIds = codesToDirectorIds.ContainsKey(code) ? codesToDirectorIds[code] : new List<string>();
+            var directors = new HashSet<Person>();
+            foreach (var directorId in directorIds.Where(personIdsToNameAndStarredFilms.ContainsKey))
+            {
+                directors.Add(new Person() { Name = personIdsToNameAndStarredFilms[directorId].Item1 });
+            }
+
+
+
+            var tagIds =
+                imdbToMovieLensIds.ContainsKey(code) && movieLensCodesToTagIds.ContainsKey(imdbToMovieLensIds[code])
+                    ? movieLensCodesToTagIds[imdbToMovieLensIds[code]]
+                    : new List<string>();
+            var tags = new HashSet<Tag>();
+            foreach (var tagCode in tagIds)
+            {
+                tags.Add(new Tag() { Name = tagCodesToTitles[tagCode] });
+            }
+
+            var movie = new Movie
+            {
+                Title = codesToTitles[code],
+                Rate = codesToRatings.ContainsKey(code)
+                    ? double.Parse(codesToRatings[code], CultureInfo.InvariantCulture)
+                    : 0,
+                Directors = directors,
+                Actors = actors,
+                Tags = tags.ToHashSet()
+            };
+
+            lock (result)
+            {
+                if (!result.ContainsKey(pair.Value))
+                    result.Add(pair.Value, movie);
+            }
+        });
         
-        return result;
+        return result.Values.ToList();
     }
-    
-    public static Dictionary<string, Tag> GetTags(Dictionary<string, Movie> movies)
+
+    public static Dictionary<string, Tag> GetTags(List<Movie> movies)
     {
         var result = new Dictionary<string, Tag>();
-        foreach (var (_, movie) in movies)
+        foreach (var movie in movies)
         {
             foreach (var tag in movie.Tags)
             {
@@ -75,11 +82,7 @@ public static class DictionariesProvider
                 }
                 else
                 {
-                    result.Add(tag.Name, new Tag
-                    {
-                        Name = tag.Name, 
-                        Movies = new HashSet<Movie>(){movie}
-                    });
+                    result.Add(tag.Name, new Tag{Name = tag.Name, Movies = new List<Movie>{movie}});
                 }
             }
         }
@@ -87,42 +90,24 @@ public static class DictionariesProvider
         return result;
     }
     
-    private static Movie CreateMovie(string code,
-        IReadOnlyDictionary<string, string> codesToTitles,
-        IReadOnlyDictionary<string, string> codesToRatings,
-        IReadOnlyDictionary<string, List<string>> movieLensCodesToTagIds,
-        IReadOnlyDictionary<string, string> tagCodesToTitles,
-        IReadOnlyDictionary<string, List<string>> codesToActorIds,
-        IReadOnlyDictionary<string, string> codesToDirectorIds,
-        IReadOnlyDictionary<string, string> imdbToMovieLensIds,
-        IReadOnlyDictionary<string,(string, List<string>)> personIdsToNameAndStarredFilms)
+    public static Dictionary<string, Person> GetPersons(List<Movie> movies)
     {
-        var actorIds =  codesToActorIds.ContainsKey(code) ? codesToActorIds[code] : new List<string>();
-        var actors = new HashSet<Person>();
-        foreach (var actorId in actorIds.Where(personIdsToNameAndStarredFilms.ContainsKey))
+        var result = new Dictionary<string, Person>();
+        foreach (var movie in movies)
         {
-            actors.Add(new Person() { Name = personIdsToNameAndStarredFilms[actorId].Item1 });
+            foreach (var person in movie.Actors.Union(movie.Directors))
+            {
+                if (result.ContainsKey(person.Name))
+                {
+                    result[person.Name].Movies.Add(movie);
+                }
+                else
+                {
+                    result.Add(person.Name, new Person() {Name = person.Name, Movies = new List<Movie>{movie}});
+                }
+            }
         }
 
-        
-        var tagIds = imdbToMovieLensIds.ContainsKey(code) && movieLensCodesToTagIds.ContainsKey(imdbToMovieLensIds[code]) ?
-            movieLensCodesToTagIds[imdbToMovieLensIds[code]] : new List<string>();
-        var tags = new HashSet<Tag>();
-        foreach (var tagCode in tagIds)
-        {
-            tags.Add(new Tag() { Name = tagCodesToTitles[tagCode]});
-        }
-        
-        return new Movie()
-        {
-            Title = codesToTitles[code],
-            Rate = codesToRatings.ContainsKey(code) ? codesToRatings[code] : null,
-            Director = codesToDirectorIds.ContainsKey(code) ? 
-                new Person()
-                 { Name = personIdsToNameAndStarredFilms[codesToDirectorIds[code]].Item1 } 
-                : new Person(),
-            Actors = actors,
-            Tags = tags.ToHashSet()
-        };
+        return result;
     }
 }

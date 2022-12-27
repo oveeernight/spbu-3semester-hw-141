@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PFMBusinessLogic", "PFMBusinessLogic\PFMBusinessLogic.csproj", "{03F7C6B7-8ED7-480F-B9DE-1C82AD6F1CEC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp1", "BlazorApp1\BlazorApp1.csproj", "{0C8F2742-DCD4-4CAC-B1E8-86B3167F592A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{03F7C6B7-8ED7-480F-B9DE-1C82AD6F1CEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03F7C6B7-8ED7-480F-B9DE-1C82AD6F1CEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03F7C6B7-8ED7-480F-B9DE-1C82AD6F1CEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C8F2742-DCD4-4CAC-B1E8-86B3167F592A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C8F2742-DCD4-4CAC-B1E8-86B3167F592A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C8F2742-DCD4-4CAC-B1E8-86B3167F592A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C8F2742-DCD4-4CAC-B1E8-86B3167F592A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

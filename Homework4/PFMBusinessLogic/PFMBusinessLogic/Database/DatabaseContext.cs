@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PFMBusinessLogic.Database.StorageElements;
 using PFMBusinessLogic.Models;
 
 namespace PFMBusinessLogic.Database;
@@ -8,22 +9,20 @@ public class DatabaseContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var connectionString =
-            "Server=localhost;Port=5432;Database=movies;Username=postgres;Password=postgres";
+            "Server=localhost;Port=5432;Database=moviesDB;Username=postgres;Password=postgres";
         optionsBuilder.UseNpgsql(connectionString);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Movie>().HasOne(movie => movie.Director);
-        modelBuilder.Entity<Movie>().HasMany(movie => movie.Actors).WithMany(actor => actor.Movies);
-        modelBuilder.Entity<Movie>().HasMany(movie => movie.Tags).WithMany(tag => tag.Movies);
-
-        // modelBuilder.Entity<Tag>().HasMany(tag => tag.Movies).WithMany(movie => movie.Tags);
-        //
-        // modelBuilder.Entity<Person>().HasMany(person => person.Movies).WithMany(movie => movie.Actors);
+        // base.OnModelCreating(modelBuilder);
+        // modelBuilder.Entity<Movie>().HasMany(movie => movie.Top10Related);
+        // modelBuilder.Entity<Movie>().HasMany(movie => movie.Tags).WithMany(tag => tag.Movies);
+        // modelBuilder.Entity<Movie>().HasMany(movie => movie.Actors).WithMany(person => person.Movies);
+        // modelBuilder.Entity<Movie>().HasMany(movie => movie.Directors).WithMany(person => person.Movies);
     }
 
-    public DbSet<Movie> MoviesStorage { get; set; }
-    public DbSet<Person> PersonsStorage { get; set; }
-    public DbSet<Tag> TagsStorage { get; set; }
+    public DbSet<MovieStorageElement> MoviesStorage { get; set; }
+    public DbSet<PersonStorageElement> PersonsStorage { get; set; }
+    public DbSet<TagStorageElement> TagsStorage { get; set; }
 }
