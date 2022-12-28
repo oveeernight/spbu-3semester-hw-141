@@ -1,90 +1,73 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Globalization;
-using System.Runtime.Serialization.Json;
-using PFMBusinnecLogic;
+﻿using System.Diagnostics;
+using PFMBusinessLogic.Database;
+using PFMBusinessLogic.Extensions;
+using PFMBusinessLogic.Providers;
 
-class Program
+
+namespace PFMBusinessLogic;
+
+public class Program
 {
     public static void Main(string[] args)
     {
         var pathTemplate = "../../../Files";
         var timer = new Stopwatch();
         timer.Start();
-         var (codesToActorIds, codesToDirectorIds) = 
-             FilesParser.GetActorsAndDirectorsByMovieId($"{pathTemplate}/ActorsDirectorsCodes_IMDB.tsv");
+        var (codesToActorIds, codesToDirectorIds) =
+            FilesParser.GetPersonsByMovieId($"{pathTemplate}/ActorsDirectorsCodes_IMDB.tsv");
         var codesToTitles = FilesParser.GetTitleByMovieCode($"{pathTemplate}/MovieCodes_IMDB.tsv");
-         var tagCodesToTitles = FilesParser.GetTagById($"{pathTemplate}/TagCodes_MovieLens.csv");
-         var codesToRatings = FilesParser.GetRatingByMovieId($"{pathTemplate}/Ratings_IMDB.tsv");
-         var movieLensCodeToTagIds = FilesParser.GetRelevantTagsByMovieLensId($"{pathTemplate}/TagScores_MovieLens.csv");
-         var imdbToMovieLensIds = FilesParser.GetMovieLensIdByImdbId($"{pathTemplate}/links_IMDB_MovieLens.csv");
-         var actorIdsToNameAndStarredFilms = FilesParser.GetStarredFilmsAndTitleByActorId($"{pathTemplate}/ActorsDirectorsNames_IMDB.txt");
-        
-         var movies = DictionariesProvider.GetMovies(codesToTitles: codesToTitles,
-             codesToActorIds: codesToActorIds,
-             codesToDirectorIds: codesToDirectorIds,
-             codesToRatings: codesToRatings,
-             tagCodesToTitles: tagCodesToTitles,
-             imdbToMovieLensIds: imdbToMovieLensIds,
-             movieLensCodesToTagIds: movieLensCodeToTagIds,
-             actorIdsToNameAndStarredFilms: actorIdsToNameAndStarredFilms
-             );
-        
-         var actorsDct = DictionariesProvider.GetActorsAndDirectors(movies: movies,
-             actorIdsToNameAndStarredFilms: actorIdsToNameAndStarredFilms,
-             codesToTitles: codesToTitles
-         );
-        
-         var tags = DictionariesProvider.GetTags(movies);
-         timer.Stop();
-         
-         var el = timer.Elapsed;
-         Console.WriteLine($"{el.Minutes}:{el.Seconds}:{el.Milliseconds}");
-         
-         InputLoop(movies, actorsDct, tags);
-    }
+        var tagCodesToTitles = FilesParser.GetTagById($"{pathTemplate}/TagCodes_MovieLens.csv");
+        var codesToRatings = FilesParser.GetRatingByMovieId($"{pathTemplate}/Ratings_IMDB.tsv");
+        var movieLensCodeToTagIds = FilesParser.GetRelevantTagsByMovieLensId($"{pathTemplate}/TagScores_MovieLens.csv");
+        var imdbToMovieLensIds = FilesParser.GetMovieLensIdByImdbId($"{pathTemplate}/links_IMDB_MovieLens.csv");
+        var personIdsToNameAndStarredFilms =
+            FilesParser.GetStarredFilmsAndTitleByPersonId($"{pathTemplate}/ActorsDirectorsNames_IMDB.txt");
 
-    private static void InputLoop(Dictionary<string, Movie> movies, Dictionary<string, HashSet<Movie>> actors,
-        Dictionary<string, HashSet<Movie>> tags)
-    {
-        Console.WriteLine("-m [title] - print information about movie with the specified title \n"+
-                          "-a [name] - print information about actor or director with the specified name \n" +
-                          "-t [tag title] - print information about movies related to the specified tag \n" +
-                          "exit to kill program");
-        var input = Console.ReadLine();
-        while (input is not "exit")
-        {
-            var key = input[..input.IndexOf(' ')];
-            var value = input[(input.IndexOf(' ') + 1)..];
-            switch (key)
-            {
-                case "-m":
-                    Console.WriteLine(movies.ContainsKey(value) ? GetMovieInfo(movies[value]) : "unknown fulm");
-                    break;
-                case "-a":
-                    Console.WriteLine(actors.ContainsKey(value) ? GetMovieTitles(actors[value]) : "unknown actor");
-                    break;
-                case "-t":
-                    Console.WriteLine(tags.ContainsKey(value) ? GetMovieTitles(tags[value]) : "unknown tag");
-                    break;
-                
-            }
-            input = Console.ReadLine();
-        }
-    }
+        var movies = DictionariesProvider.GetMovies(codesToTitles: codesToTitles,
+            codesToActorIds: codesToActorIds,
+            codesToDirectorIds: codesToDirectorIds,
+            codesToRatings: codesToRatings,
+            tagCodesToTitles: tagCodesToTitles,
+            imdbToMovieLensIds: imdbToMovieLensIds,
+            movieLensCodesToTagIds: movieLensCodeToTagIds,
+            personIdsToNameAndStarredFilms: personIdsToNameAndStarredFilms
+        );
+        Console.WriteLine($"\tMovies count: {movies.Count}");
 
-    private static string GetMovieInfo(Movie movie)
-    {
-        return $"Title - {movie.Title} \n" +
-               $"Rate - {movie.Rate}\n" +
-               $"Director - {movie.Director}\n " +
-               $"Actors - {string.Join(',', movie.Actors)}\n" +
-               $"Tags - {string.Join(',', movie.Tags)}";
-    }
+        var persons = DictionariesProvider.GetPersons(movies: movies);
+        Console.WriteLine($"\tPersons count: {persons.Count}");
 
-    private static string GetMovieTitles(IEnumerable<Movie> movies)
-    {
-        return string.Join(',', movies.Select(movie => movie.Title));
+        var tags = DictionariesProvider.GetTags(movies);
+        Console.WriteLine($"\tTags count: {tags.Count}");
+        
+        var el = timer.Elapsed;
+        Console.WriteLine($"{el.Minutes:00}:{el.Seconds:00}:{el.Milliseconds:00}");
+        
+        Console.WriteLine("Filling related movies");
+        movies = movies.WithRelatedMovies(persons, tags);
+         el = timer.Elapsed;
+        Console.WriteLine($"{el.Minutes:00}:{el.Seconds:00}:{el.Milliseconds:00}");
+
+        Console.WriteLine("Writing models to database");
+        Console.WriteLine();
+
+        // using var db = new DatabaseContext();
+        // db.Database.EnsureDeleted();
+        // db.Database.EnsureCreated();
+        //
+        // Console.WriteLine("Writing tags");
+        // db.TagsStorage.AddRange(tags.Values.Select(tag => tag.ToStorageElement()));
+        //
+        // Console.WriteLine("Writing persons");
+        // db.PersonsStorage.AddRange(persons.Values.Select(person => person.ToStorageElement()));
+        //
+        // Console.WriteLine("Writing movies");
+        // db.MoviesStorage.AddRange(movies.Select(movie => movie.ToStorageElement()));
+        //
+        // Console.WriteLine("Saving changes");
+        // db.SaveChanges();
+        //
+        // el = timer.Elapsed;
+        // Console.WriteLine($"{el.Minutes:00}:{el.Seconds:00}:{el.Milliseconds:00}");
     }
 }
-

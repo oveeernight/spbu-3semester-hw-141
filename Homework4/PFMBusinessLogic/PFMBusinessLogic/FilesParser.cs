@@ -1,11 +1,12 @@
 ﻿using System.Globalization;
 
-namespace PFMBusinnecLogic;
+namespace PFMBusinessLogic;
 
 public class FilesParser
 {
     public static Dictionary<string, string> GetTitleByMovieCode(string path)
     {
+        Console.WriteLine("Parsing titles");
         var lines = File.ReadAllLines(path);
         var result = new Dictionary<string, string>();
         Parallel.ForEach(lines, line =>
@@ -41,23 +42,24 @@ public class FilesParser
     }
 
     // key - movie id, value - list of roles
-    public static (Dictionary<string, List<string>>, Dictionary<string, string>) GetActorsAndDirectorsByMovieId(string path)
+    public static (Dictionary<string, List<string>>, Dictionary<string, List<string>>) GetPersonsByMovieId(string path)
     {
+        Console.WriteLine("Parsing actors and directors starred by movie id");
         var lines = File.ReadAllLines(path);
-        var actors = new Dictionary<string, List<string>>();
-        var directors = new Dictionary<string, string>();
+        var codesToActors = new Dictionary<string, List<string>>();
+        var codeToDirectors= new Dictionary<string, List<string>>();
         Parallel.ForEach(lines, line =>
         {
             var span = line.AsSpan();
             var i = span.IndexOf('\t');
-            var movieId = span[..i];
+            var movieId = span[..i].ToString();
             span = span[(i + 1)..];
 
             i = span.IndexOf('\t');
             span = span[(i + 1)..];
 
             i = span.IndexOf('\t');
-            var actorId = span[..i];
+            var personId = span[..i].ToString();
 
             i = span.IndexOf(('\t'));
             span = span[(i + 1)..];
@@ -66,37 +68,42 @@ public class FilesParser
             var role = span[..i].ToString();
             if (role is "actor" or "actress")
             {
-                lock (actors)
+                lock (codesToActors)
                 {
-                    if (actors.ContainsKey(movieId.ToString()))
+                    if (codesToActors.ContainsKey(movieId))
                     {
-                        actors[movieId.ToString()].Add(actorId.ToString());
+                        codesToActors[movieId].Add(personId);
                     }
                     else
                     {
-                        actors.Add(movieId.ToString(), new List<string> { actorId.ToString() });
+                        codesToActors.Add(movieId, new List<string> { personId });
                     }
                 }
             }
             else if (role is "director")
             {
-                lock (directors)
+                lock (codeToDirectors)
                 {
-                    if (!directors.ContainsKey(movieId.ToString()))
+                    if (codeToDirectors.ContainsKey(movieId))
                     {
-                        directors.Add(movieId.ToString(),  actorId.ToString());
+                        codeToDirectors[movieId].Add(personId);
+                    }
+                    else
+                    {
+                        codeToDirectors.Add(movieId,  new List<string> {personId} );
                     }
                 }
                 
             }
         });
         
-        return (actors, directors);
+        return (codesToActors, codeToDirectors);
     }
 
     // key - actorId, value - list of filmIds, name
-    public static Dictionary<string, (string, List<string>)> GetStarredFilmsAndTitleByActorId(string path)
+    public static Dictionary<string, (string, List<string>)> GetStarredFilmsAndTitleByPersonId(string path)
     {
+        Console.WriteLine("Parsing persons starred movies");
         var lines = File.ReadAllLines(path);
         var result = new Dictionary<string, (string, List<string>)>();
         Parallel.ForEach(lines, line =>
@@ -137,6 +144,7 @@ public class FilesParser
 
     public static Dictionary<string, string> GetRatingByMovieId(string path)
     {
+        Console.WriteLine("Parsing rates");
         var lines = File.ReadAllLines(path);
         return lines.Skip(1).AsParallel().ToDictionary(keySelector: line => line[..line.IndexOf('\t')], elementSelector:
             line =>
@@ -149,6 +157,7 @@ public class FilesParser
     // key - movieId, value - list of relevant tags
     public static Dictionary<string, List<string>> GetRelevantTagsByMovieLensId(string path)
     {
+        Console.WriteLine("Parsing relevant tags");
         var result = new Dictionary<string, List<string>>();
         var lines = File.ReadAllLines(path).Skip(1);
         Parallel.ForEach(lines, line =>
@@ -183,6 +192,7 @@ public class FilesParser
 
     public static Dictionary<string, string> GetMovieLensIdByImdbId(string path)
     {
+        Console.WriteLine("Parsing Imdb and MovieLens ids");
         var lines = File.ReadAllLines(path);
         return lines.Skip(1).AsParallel().ToDictionary(keySelector: line =>
         {
@@ -206,6 +216,7 @@ public class FilesParser
 
     public static Dictionary<string, string> GetTagById(string path)
     {
+        Console.WriteLine("Parsing tag names");
         var lines = File.ReadAllLines(path);
         return lines.Skip(1).AsParallel().ToDictionary(keySelector: line => line[..line.IndexOf(',')],
             elementSelector: line => line[(line.IndexOf(',') + 1)..]);
