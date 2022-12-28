@@ -1,0 +1,110 @@
+﻿@page "/Movies/{requestedTitle}"
+@using PFMBusinessLogic.Models
+@using PFMBusinessLogic.Database.Repositories
+@using PFMBusinessLogic.Services
+@using System.Text.Json
+@inject IMoviesService moviesService;
+<h3>Movies</h3>
+
+<div class="input-group">
+    <input class="form-control rounded" type="text" placeholder="Search" @bind="input"/>
+    <button class="btn btn-outline-primary" onclick="@SetMovie">Find</button>
+</div>
+
+@if (currentMovie != null)
+{
+    <div style="display: flex; flex-direction: row">
+        <img src="@imdbResponse.Poster"/>
+        <div style="margin: 8px">
+            <h5 style="font-weight: bold">Rate</h5>
+            @currentMovie.Rate
+        </div>
+        <div style="margin: 8px">
+            <h5 style="font-weight: bold">Actors</h5>
+            @foreach (var actor in currentMovie.Actors)
+            {
+                <div>
+                    <a href="/Persons/@actor.Name">@actor.Name</a>
+                </div>
+            }
+        </div>
+        <div style="margin: 8px">
+            <h5 style="font-weight: bold">Directors</h5>
+            @foreach (var director in currentMovie.Directors)
+            {
+                <div>
+                    <a href="/Persons/@director.Name">@director.Name</a>
+                </div>
+            }
+        </div>
+        <div style="margin: 8px">
+            <h5 style="font-weight: bold">Tags</h5>
+            @foreach (var tag in currentMovie.Tags)
+            {
+                <div>
+                    <a href="/Tags/@tag.Name">@tag.Name</a>
+                </div>
+            }
+        </div>
+        <div style="margin: 8px">
+            <h5 style="font-weight: bold">Related</h5>
+            @foreach (var movie in currentMovie.Top10Related)
+            {
+                <div>
+                    <a href="/Movies/@movie.Title">@movie.Title</a>
+                </div>
+            }
+        </div>
+        <div style="margin: 8px">
+            <h5 style="font-weight: bold">Plot</h5>
+            <div>@imdbResponse.Plot</div>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public string RequestedTitle { get; set; }
+    
+    private string input;
+    private Movie? currentMovie;
+    private ImdbResponse imdbResponse;
+
+    private async Task SetMovie()
+    {
+        currentMovie = await moviesService.GetMovie(input);
+        await SetPlotAndTitle();
+    }
+
+    private async Task SetPlotAndTitle()
+    {
+        var requestTitle = GetRequestTitle(input);
+        var apiKey = "d0503a57";
+        var uri = $"http://www.omdbapi.com/?t={requestTitle}&apikey={apiKey}";
+        var httpClient = new HttpClient();
+        var request = await httpClient.SendAsync(new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(uri)
+        });
+        var content = await request.Content.ReadAsStringAsync();
+        imdbResponse = JsonSerializer.Deserialize<ImdbResponse>(content);
+    }
+
+    private string GetRequestTitle(string title)
+    {
+        return string.Join('+', title.Split());
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        input = RequestedTitle;
+        if (RequestedTitle != "null")
+        {
+            input = RequestedTitle;
+            await SetMovie();
+        }
+    }
+
+}

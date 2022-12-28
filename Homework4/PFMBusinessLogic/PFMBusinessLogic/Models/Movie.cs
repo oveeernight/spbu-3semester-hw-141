@@ -33,10 +33,10 @@ public class Movie
 
     public MovieStorageElement ToStorageElement()
     {
-        var actors = JsonSerializer.Serialize(Actors.Select(actor => actor.Name));
-        var directors = JsonSerializer.Serialize(Directors.Select(director => director.Name));
-        var related = JsonSerializer.Serialize(Top10Related.Select(m => m.Title));
-        var tags = JsonSerializer.Serialize(Tags.Select(tag => tag.Name));
+        var actors = JsonSerializer.Serialize(Actors.Select(actor => new Person{Name = actor.Name}));
+        var directors = JsonSerializer.Serialize(Directors.Select(director =>  new Person{Name = director.Name}));
+        var related = JsonSerializer.Serialize(Top10Related.Select(m => new Movie{Title = m.Title}));
+        var tags = JsonSerializer.Serialize(Tags.Select(tag => new Tag{Name = tag.Name}));
         return new MovieStorageElement
         {
             Title = Title,

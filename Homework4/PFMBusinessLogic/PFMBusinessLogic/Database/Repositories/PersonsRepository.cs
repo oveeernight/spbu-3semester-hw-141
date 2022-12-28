@@ -32,11 +32,11 @@ public class PersonsRepository : IPersonsRepository
     
     private static Person ToModel(PersonStorageElement storageElement)
     {
-        var stringMovies = JsonSerializer.Deserialize<string[]>(storageElement.Movies);
+        var stringMovies = JsonSerializer.Deserialize<Movie[]>(storageElement.Movies);
         return new Person()
         {
             Name = storageElement.Name,
-            Movies = stringMovies.Select(title => new Movie() { Title = title }).ToArray()
+            Movies = stringMovies.Select(movie => new Movie() { Title = movie.Title }).ToArray()
         };
     }
 }

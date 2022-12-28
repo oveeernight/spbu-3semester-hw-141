@@ -22,7 +22,8 @@ public class Tag
         return new TagStorageElement
         {
             Name = Name,
-            Movies = JsonSerializer.Serialize(Movies.SelectMany(m => m.Title))
+            // Movies = JsonSerializer.Serialize(Movies.SelectMany(m => m.Title))
+            Movies = JsonSerializer.Serialize(Movies.Select(movie => new Movie(){Title = movie.Title}))
         };
     }
 }

@@ -17,6 +17,7 @@ public class MoviesRepository : IMoviesRepository
     public async Task<Movie> ReadAsync(string title)
     {
         var movie = await dbContext.MoviesStorage.FindAsync(title);
+        if (movie == null) return new Movie();
         return ToModel(movie);
     }
 
@@ -34,19 +35,19 @@ public class MoviesRepository : IMoviesRepository
 
     private static Movie ToModel(MovieStorageElement storageElement)
     {
-        var stringActors = JsonSerializer.Deserialize<string[]>(storageElement.Actors);
-        var stringDirectors = JsonSerializer.Deserialize<string[]>(storageElement.Directors);
-        var stringRelated = JsonSerializer.Deserialize<string[]>(storageElement.Top10Related);
-        var stringTags = JsonSerializer.Deserialize<string[]>(storageElement.Tags);
+        var actors = JsonSerializer.Deserialize<Person[]>(storageElement.Actors);
+        var directors = JsonSerializer.Deserialize<Person[]>(storageElement.Directors);
+        var related = JsonSerializer.Deserialize<Movie[]>(storageElement.Top10Related);
+        var tags = JsonSerializer.Deserialize<Tag[]>(storageElement.Tags);
 
         return new Movie
         {
             Title = storageElement.Title,
             Rate = storageElement.Rate,
-            Actors = stringActors.Select(a => new Person() { Name = a }).ToArray(),
-            Directors = stringDirectors.Select(d => new Person() { Name = d }).ToArray(),
-            Tags = stringTags.Select(t => new Tag() { Name = t }).ToArray(),
-            Top10Related = stringRelated.Select(m => new Movie() { Title = m }).ToArray()
+            Actors = actors ?? Array.Empty<Person>(),
+            Directors = directors ?? Array.Empty<Person>(),
+            Tags = tags ?? Array.Empty<Tag>(),
+            Top10Related = related ?? Array.Empty<Movie>()
         };
     }
 }

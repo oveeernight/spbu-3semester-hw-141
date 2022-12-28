@@ -22,7 +22,8 @@ public class Person
         return new PersonStorageElement
         {
             Name = Name,
-            Movies = JsonSerializer.Serialize(Movies.Select(movie => movie.Title))
+            // Movies = JsonSerializer.Serialize(Movies.Select(movie => movie.Title))
+            Movies = JsonSerializer.Serialize(Movies.Select(movie => new Movie(){Title = movie.Title}))
         };
     }
 }

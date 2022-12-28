@@ -32,11 +32,11 @@ public class TagsRepository : ITagsRepository
 
     private static Tag ToModel(TagStorageElement storageElement)
     {
-        var stringMovies = JsonSerializer.Deserialize<string[]>(storageElement.Movies);
+        var stringMovies = JsonSerializer.Deserialize<List<Movie>>(storageElement.Movies);
         return new Tag()
         {
             Name = storageElement.Name,
-            Movies = stringMovies.Select(title => new Movie() { Title = title }).ToArray()
+            Movies = stringMovies.Select(movie => new Movie() { Title = movie.Title }).ToArray()
         };
     }
 }

@@ -1,21 +1,32 @@
-﻿using PFMBusinessLogic.Models;
+﻿using PFMBusinessLogic.Database.Repositories;
+using PFMBusinessLogic.Models;
 
 namespace PFMBusinessLogic.Services;
 
 public class MoviesService : IMoviesService
 {
+    private IMoviesRepository moviesRepository;
+    private ITagsRepository tagsRepository;
+    private IPersonsRepository personsRepository;
+    
+    public MoviesService(IMoviesRepository moviesRepository, IPersonsRepository personsRepository, ITagsRepository tagsRepository)
+    {
+        this.moviesRepository = moviesRepository;
+        this.tagsRepository = tagsRepository;
+        this.personsRepository = personsRepository;
+    }
     public async Task<Movie> GetMovie(string title)
     {
-        throw new NotImplementedException();
+        return await moviesRepository.ReadAsync(title);
     }
 
     public async Task<Person> GetPerson(string name)
     {
-        throw new NotImplementedException();
+        return await personsRepository.ReadAsync(name);
     }
 
     public async Task<Tag> GetTag(string name)
     {
-        throw new NotImplementedException();
+        return await tagsRepository.ReadAsync(name);
     }
 }
