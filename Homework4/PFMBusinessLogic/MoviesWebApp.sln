@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PFMBusinessLogic", "PFMBusinessLogic\PFMBusinessLogic.csproj", "{03F7C6B7-8ED7-480F-B9DE-1C82AD6F1CEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApplication", "BlazorApplication\BlazorApplication.csproj", "{D5DD1810-CF0D-4BBB-A251-04FA99C70E0B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{03F7C6B7-8ED7-480F-B9DE-1C82AD6F1CEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03F7C6B7-8ED7-480F-B9DE-1C82AD6F1CEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03F7C6B7-8ED7-480F-B9DE-1C82AD6F1CEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03F7C6B7-8ED7-480F-B9DE-1C82AD6F1CEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5DD1810-CF0D-4BBB-A251-04FA99C70E0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5DD1810-CF0D-4BBB-A251-04FA99C70E0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5DD1810-CF0D-4BBB-A251-04FA99C70E0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5DD1810-CF0D-4BBB-A251-04FA99C70E0B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

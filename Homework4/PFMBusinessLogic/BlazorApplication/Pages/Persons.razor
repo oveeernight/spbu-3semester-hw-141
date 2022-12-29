@@ -1,0 +1,59 @@
+﻿@page "/Persons/{requestedPerson}"
+@using PFMBusinessLogic.Models
+@using PFMBusinessLogic.Services
+@using Microsoft.AspNetCore.Mvc
+@using System.Diagnostics;
+@using IMDbApiLib
+@using Microsoft.AspNetCore.Mvc;
+@using Microsoft.AspNetCore.Mvc.RazorPages;
+@inject IMoviesService moviesService
+<h3>Persons</h3>
+
+<div class="input-group">
+    <input class="form-control rounded" type="text" placeholder="Search" @bind="input"/>
+    <button class="btn btn-outline-primary" onclick="@SetPerson">Find</button>
+</div>
+@if (currentPerson != null)
+{
+    
+    <div style="display: flex; flex-direction: row">
+        <img src="@personImage" style="max-height: 500px; max-width: 600px"/>
+        <h5>Movies</h5>
+        <div style="display: flex; flex-direction: column">
+             @foreach (var movie in currentPerson.Movies)
+            {
+                <div>
+                    <a href="/Movies/@movie.Title">@movie.Title</a>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string RequestedPerson { get; set; }
+    private Person currentPerson;
+    private string input;
+    private string personImage;
+    
+
+    private async Task SetPerson()
+    {
+        currentPerson = await moviesService.GetPerson(input);
+        var apiLib = new ApiLib("k_8v9999so");
+        var response = await apiLib.SearchNameAsync(input.Replace(" ", "%20"));
+        var image = response.Results.First().Image;
+        personImage = image;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (RequestedPerson != "null")
+        {
+            input = RequestedPerson;
+            await SetPerson();
+        }
+    }
+
+}

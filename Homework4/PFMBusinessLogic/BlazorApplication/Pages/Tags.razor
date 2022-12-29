@@ -1,0 +1,46 @@
+﻿@page "/Tags/{requestedTag}"
+@using PFMBusinessLogic.Services
+@using PFMBusinessLogic.Models
+@inject IMoviesService moviesService
+<h3>Tags</h3>
+
+<div class="input-group">
+    <input class="form-control rounded" type="text" placeholder="Search" @bind="input"/>
+    <button class="btn btn-outline-primary" @onclick="SetTag">Find</button>
+</div>
+@if (currentTag != null)
+{
+    <div>
+    <h5 style="font-weight: bold">
+        Movies
+    </h5>
+    @foreach (var movie in currentTag.Movies)
+    {
+        <div>
+            <a href="/Movies/@movie.Title">@movie.Title</a>
+        </div>
+    }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string RequestedTag { get; set; }
+    private Tag currentTag;
+    private string input;
+
+    private async Task SetTag()
+    {
+        currentTag = await moviesService.GetTag(input);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (RequestedTag != "null")
+        {
+            input = RequestedTag;
+            await SetTag();
+        }
+    }
+
+}
