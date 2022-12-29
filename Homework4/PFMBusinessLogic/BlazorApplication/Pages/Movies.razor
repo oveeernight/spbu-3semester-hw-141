@@ -14,14 +14,17 @@
 @if (currentMovie != null)
 {
     <div style="display: flex; flex-direction: row">
-        <img src="@imdbResponse.Poster"/>
+        @if (imdbResponse != null)
+        {
+            <img src=@imdbResponse.Poster style="max-height: 700px; max-width: 700px"/>
+        }
         <div style="margin: 8px">
             <h5 style="font-weight: bold">Rate</h5>
             @currentMovie.Rate
         </div>
         <div style="margin: 8px">
             <h5 style="font-weight: bold">Actors</h5>
-            @foreach (var actor in currentMovie.Actors)
+            @foreach (var actor in currentMovie.Actors ?? new List<Person>())
             {
                 <div>
                     <a href="/Persons/@actor.Name">@actor.Name</a>
@@ -30,7 +33,7 @@
         </div>
         <div style="margin: 8px">
             <h5 style="font-weight: bold">Directors</h5>
-            @foreach (var director in currentMovie.Directors)
+            @foreach (var director in currentMovie.Directors ?? new List<Person>())
             {
                 <div>
                     <a href="/Persons/@director.Name">@director.Name</a>
@@ -39,7 +42,7 @@
         </div>
         <div style="margin: 8px">
             <h5 style="font-weight: bold">Tags</h5>
-            @foreach (var tag in currentMovie.Tags)
+            @foreach (var tag in currentMovie.Tags ?? new List<Tag>())
             {
                 <div>
                     <a href="/Tags/@tag.Name">@tag.Name</a>
@@ -48,7 +51,7 @@
         </div>
         <div style="margin: 8px">
             <h5 style="font-weight: bold">Related</h5>
-            @foreach (var movie in currentMovie.Top10Related)
+            @foreach (var movie in currentMovie.Top10Related ?? new List<Movie>())
             {
                 <div>
                     <a href="/Movies/@movie.Title">@movie.Title</a>
@@ -57,7 +60,10 @@
         </div>
         <div style="margin: 8px">
             <h5 style="font-weight: bold">Plot</h5>
-            <div>@imdbResponse.Plot</div>
+            @if (imdbResponse != null)
+            {
+                <div>@imdbResponse.Plot</div>
+            }
         </div>
     </div>
 }
@@ -75,6 +81,11 @@
     {
         currentMovie = await moviesService.GetMovie(input);
         await SetPlotAndTitle();
+        imdbResponse ??= new ImdbResponse()
+        {
+            Poster = "https://m.media-amazon.com/images/M/MV5BMjA1MjE2MTQ2MV5BMl5BanBnXkFtZTcwMjE5MDY0Nw@@._V1_Ratio1.0000_AL_.jpg",
+            Plot = "No plot"
+        };
     }
 
     private async Task SetPlotAndTitle()
@@ -99,7 +110,6 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        input = RequestedTitle;
         if (RequestedTitle != "null")
         {
             input = RequestedTitle;
